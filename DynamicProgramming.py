@@ -19,16 +19,19 @@ class QValueIterationAgent:
         self.n_actions = n_actions
         self.gamma = gamma
         self.Q_sa = np.zeros((n_states,n_actions))
+        self.Q_sa_means = np.zeros((n_states,n_actions))
         
     def select_action(self,s):
         ''' Returns the greedy best action in state s ''' 
         # TO DO: Add own code
-        a = np.random.randint(0,self.n_actions) # Replace this with correct action selection
+        a = np.argmax(self.Q_sa,axis=1)[s]
         return a
         
     def update(self,s,a,p_sas,r_sas):
         ''' Function updates Q(s,a) using p_sas and r_sas '''
+
         # TO DO: Add own code
+
         pass
     
     
@@ -39,6 +42,11 @@ def Q_value_iteration(env, gamma=1.0, threshold=0.001):
     QIagent = QValueIterationAgent(env.n_states, env.n_actions, gamma)    
         
     # TO DO: IMPLEMENT Q-VALUE ITERATION HERE
+    while(delta < threshold):
+        delta = 0 
+        for state in QIagent.n_states:
+            for action in QIagent.n_actions:
+                # COMPLETE IT
         
     # Plot current Q-value estimates & print max error
     # env.render(Q_sa=QIagent.Q_sa,plot_optimal_policy=True,step_pause=0.2)
