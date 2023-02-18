@@ -121,14 +121,15 @@ class StochasticWindyGridworld:
         return np.array(np.unravel_index(state,self.shape))
     
     def _location_to_state(self,location):
-        ''' bring an (x,y) location of the agent to a state index '''
+        ''' bring an (x,y) location of the agent to a state index 
+            the opposite operation of the _state_to_location '''
         return np.ravel_multi_index(location,self.shape)
         
     def _construct_model(self):
         ''' Constructs full p(s'|s,a) and r(s,a,s') arrays
             Stores these in self.p_sas and self.r_sas '''
             
-        # Initialize transition and reward functions
+        # Initialize transition and reward functions (dimensions: n_states tables with n_actions rows and n_states cols)
         p_sas = np.zeros((self.n_states,self.n_actions,self.n_states))
         r_sas = np.zeros((self.n_states,self.n_actions,self.n_states)) + self.reward_per_step # set all rewards to the default value
         
