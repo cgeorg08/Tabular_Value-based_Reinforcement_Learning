@@ -28,7 +28,10 @@ class QLearningAgent:
                 raise KeyError("Provide an epsilon")
                 
             # TO DO: Add own code
-            a = np.random.randint(0,self.n_actions) # Replace this with correct action selection
+            if np.random.uniform() < epsilon:
+                a = np.random.randint(0,self.n_actions)
+            else:
+                a = argmax(self.Q_sa_means[s])
             
                 
         elif policy == 'softmax':
@@ -36,13 +39,15 @@ class QLearningAgent:
                 raise KeyError("Provide a temperature")
                 
             # TO DO: Add own code
-            a = np.random.randint(0,self.n_actions) # Replace this with correct action selection
+            a = np.argmax(softmax(self.Q_sa_means[s]))
             
         return a
         
     def update(self,s,a,r,s_next,done):
         # TO DO: Add own code
-        pass
+        backup_estimate = r + self.gamma * np.max(self.Q_sa_means,axis=1)[s_next]
+        new_Q_sa_mean = self.Q_sa_means[s][a] + self.learning_rate * (backup_estimate - self.Q_sa_means[s][a])
+        return new_Q_sa_mean
 
 def q_learning(n_timesteps, learning_rate, gamma, policy='egreedy', epsilon=None, temp=None, plot=True):
     ''' runs a single repetition of q_learning
