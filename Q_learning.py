@@ -53,6 +53,13 @@ def q_learning(n_timesteps, learning_rate, gamma, policy='egreedy', epsilon=None
     rewards = []
 
     # TO DO: Write your Q-learning algorithm here!
+    done = False
+    state = env.start_location
+    while not done:
+        action = pi.select_action(state)    # select action
+        s_next,r,done = env.step(action)    # simulate environment
+        pi.Q_sa_means[state][action] = pi.update(state,action,r,s_next,done)    # Q update
+        state = s_next  # update state
     
     # if plot:
     #    env.render(Q_sa=pi.Q_sa,plot_optimal_policy=True,step_pause=0.1) # Plot the Q-value estimates during Q-learning execution
