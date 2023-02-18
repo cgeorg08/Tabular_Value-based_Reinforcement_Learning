@@ -39,7 +39,7 @@ class QLearningAgent:
                 raise KeyError("Provide a temperature")
                 
             # TO DO: Add own code
-            a = np.argmax(softmax(self.Q_sa_means[s]))
+            a = np.argmax(softmax(self.Q_sa_means[s],temp))
             
         return a
         
@@ -59,12 +59,18 @@ def q_learning(n_timesteps, learning_rate, gamma, policy='egreedy', epsilon=None
 
     # TO DO: Write your Q-learning algorithm here!
     done = False
-    state = env.start_location
+    steps = 0
+    state = env._location_to_state(env.start_location)
     while not done:
-        action = pi.select_action(state)    # select action
+        steps+=1
+        action = pi.select_action(state,policy,epsilon,temp)    # select action         
         s_next,r,done = env.step(action)    # simulate environment
         pi.Q_sa_means[state][action] = pi.update(state,action,r,s_next,done)    # Q update
+
+        rewards.append(r)
         state = s_next  # update state
+    
+    print('total steps to find the solution = ',steps)
     
     # if plot:
     #    env.render(Q_sa=pi.Q_sa,plot_optimal_policy=True,step_pause=0.1) # Plot the Q-value estimates during Q-learning execution
@@ -78,7 +84,7 @@ def test():
     learning_rate = 0.1
 
     # Exploration
-    policy = 'egreedy' # 'egreedy' or 'softmax' 
+    policy = 'softmax' # 'egreedy' or 'softmax' 
     epsilon = 0.1
     temp = 1.0
     
