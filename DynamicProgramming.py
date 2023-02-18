@@ -31,8 +31,10 @@ class QValueIterationAgent:
         ''' Function updates Q(s,a) using p_sas and r_sas '''
 
         # TO DO: Add own code
-
-        pass
+        sum = 0
+        for next_s in range(p_sas.shape[2]):
+            sum = sum + (p_sas[s][a][next_s] * (r_sas[s][a][next_s] + self.gamma * np.max(self.Q_sa,axis=1)[next_s]))
+        return sum
     
     
     
@@ -42,14 +44,25 @@ def Q_value_iteration(env, gamma=1.0, threshold=0.001):
     QIagent = QValueIterationAgent(env.n_states, env.n_actions, gamma)    
         
     # TO DO: IMPLEMENT Q-VALUE ITERATION HERE
-    while(delta < threshold):
-        delta = 0 
-        for state in QIagent.n_states:
-            for action in QIagent.n_actions:
-                # COMPLETE IT
+    i=0     # loops
+    while True:
+        i+=1
+        max_error = 0 
+        for state in range(QIagent.n_states):
+            for action in range(QIagent.n_actions):
+                x = QIagent.Q_sa[state][action]     # store current estimate
+                QIagent.Q_sa_means[state][action] = QIagent.update(state,action,env.p_sas,env.r_sas)    # Q-iteration update rule
+                max_error = max(max_error,abs(x-QIagent.Q_sa_means[state][action]))     # update max error
+                QIagent.Q_sa[state][action] = QIagent.Q_sa_means[state][action]
+        print("Q-value iteration, iteration {}, max error {}".format(i,max_error))
+
+        if max_error < threshold:
+            break
+    
+    QIagent.Q_sa = QIagent.Q_sa_means.copy()
         
     # Plot current Q-value estimates & print max error
-    # env.render(Q_sa=QIagent.Q_sa,plot_optimal_policy=True,step_pause=0.2)
+    # env.render(Q_sa=QIagent.Q_sa,plot_optimal_policy=True,step_pause=0.8)
     # print("Q-value iteration, iteration {}, max error {}".format(i,max_error))
      
     return QIagent
@@ -60,6 +73,8 @@ def experiment():
     env = StochasticWindyGridworld(initialize_model=True)
     env.render()
     QIagent = Q_value_iteration(env,gamma,threshold)
+
+    print('I found the optimal policy')
     
     # View optimal policy
     done = False
@@ -67,7 +82,7 @@ def experiment():
     while not done:
         a = QIagent.select_action(s)
         s_next, r, done = env.step(a)
-        env.render(Q_sa=QIagent.Q_sa,plot_optimal_policy=True,step_pause=0.5)
+        env.render(Q_sa=QIagent.Q_sa,plot_optimal_policy=True,step_pause=2)
         s = s_next
 
     # TO DO: Compute mean reward per timestep under the optimal policy
