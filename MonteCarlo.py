@@ -19,6 +19,7 @@ class MonteCarloAgent:
         self.learning_rate = learning_rate
         self.gamma = gamma
         self.Q_sa = np.zeros((n_states,n_actions))
+        self.Q_sa_means = np.zeros((n_states,n_actions))
         
     def select_action(self, s, policy='egreedy', epsilon=None, temp=None):
         
@@ -27,7 +28,10 @@ class MonteCarloAgent:
                 raise KeyError("Provide an epsilon")
                 
             # TO DO: Add own code
-            a = np.random.randint(0,self.n_actions) # Replace this with correct action selection
+            if np.random.uniform() < epsilon:
+                a = np.random.randint(0,self.n_actions)
+            else:
+                a = argmax(self.Q_sa_means[s])
             
                 
         elif policy == 'softmax':
@@ -35,7 +39,7 @@ class MonteCarloAgent:
                 raise KeyError("Provide a temperature")
                 
             # TO DO: Add own code
-            a = np.random.randint(0,self.n_actions) # Replace this with correct action selection
+            a = np.argmax(softmax(self.Q_sa_means[s],temp))
             
         return a
         
@@ -57,6 +61,14 @@ def monte_carlo(n_timesteps, max_episode_length, learning_rate, gamma,
     rewards = []
 
     # TO DO: Write your Monte Carlo RL algorithm here!
+    # phase 1 is the same with n-step
+    # phase 2 : starting from line G_t+1 = 0
+    backup_estimate_next = 0
+    for i in range(steps,-1,-1):
+        backup_estimate = rewards[i] + gamma*backup_estimate_next
+        current_Q = pi.Q_sa_means[states_list[i]][actions_list[i]]
+        pi.Q_sa_means[states_list[i]][actions_list[i]] = current_Q + learning_rate*(backup_estimate-current_Q)
+        backup_estimate_next = backup_estimate
     
     # if plot:
     #    env.render(Q_sa=pi.Q_sa,plot_optimal_policy=True,step_pause=0.1) # Plot the Q-value estimates during Monte Carlo RL execution
