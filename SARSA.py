@@ -19,6 +19,7 @@ class SarsaAgent:
         self.learning_rate = learning_rate
         self.gamma = gamma
         self.Q_sa = np.zeros((n_states,n_actions))
+        self.Q_sa_means = np.zeros((n_states,n_actions))
         
     def select_action(self, s, policy='egreedy', epsilon=None, temp=None):
         
@@ -27,7 +28,10 @@ class SarsaAgent:
                 raise KeyError("Provide an epsilon")
                 
             # TO DO: Add own code
-            a = np.random.randint(0,self.n_actions) # Replace this with correct action selection
+            if np.random.uniform() < epsilon:
+                a = np.random.randint(0,self.n_actions)
+            else:
+                a = argmax(self.Q_sa_means[s])
             
                 
         elif policy == 'softmax':
@@ -35,13 +39,15 @@ class SarsaAgent:
                 raise KeyError("Provide a temperature")
                 
             # TO DO: Add own code
-            a = np.random.randint(0,self.n_actions) # Replace this with correct action selection
+            a = np.argmax(softmax(self.Q_sa_means[s],temp))
             
         return a
         
     def update(self,s,a,r,s_next,a_next,done):
         # TO DO: Add own code
-        pass
+        backup_estimate = r + self.gamma * self.Q_sa_means[s_next][a_next]
+        new_Q_sa_mean = self.Q_sa_means[s][a] + self.learning_rate * (backup_estimate - self.Q_sa_means[s][a])
+        return new_Q_sa_mean
         
 def sarsa(n_timesteps, learning_rate, gamma, policy='egreedy', epsilon=None, temp=None, plot=True):
     ''' runs a single repetition of SARSA
@@ -52,6 +58,21 @@ def sarsa(n_timesteps, learning_rate, gamma, policy='egreedy', epsilon=None, tem
     rewards = []
 
     # TO DO: Write your SARSA algorithm here!
+    done = False
+    steps = 0
+    state = env._location_to_state(env.start_location)
+    action = pi.select_action(state,policy,epsilon,temp)    # select action 
+    while not done:
+        steps+=1
+        s_next,r,done = env.step(action)    # simulate environment
+        a_next = pi.select_action(s_next,policy,epsilon,temp)        # select action 
+        pi.Q_sa_means[state][action] = pi.update(state,action,r,s_next,a_next,done)    # SARSA update    
+
+        rewards.append(r)
+        state = s_next  # update state
+        action = a_next # update action
+    
+    print('total steps to find the solution = ',steps)
     
     # if plot:
     #    env.render(Q_sa=pi.Q_sa,plot_optimal_policy=True,step_pause=0.1) # Plot the Q-value estimates during SARSA execution
