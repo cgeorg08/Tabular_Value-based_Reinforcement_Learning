@@ -55,6 +55,7 @@ def Q_value_iteration(env, gamma=1.0, threshold=0.001):
                 max_error = max(max_error,abs(x-QIagent.Q_sa_means[state][action]))     # update max error
                 QIagent.Q_sa[state][action] = QIagent.Q_sa_means[state][action]
         print("Q-value iteration, iteration {}, max error {}".format(i,max_error))
+        env.render(Q_sa=QIagent.Q_sa,plot_optimal_policy=True,step_pause=1)
 
         if max_error < threshold:
             break
@@ -79,9 +80,12 @@ def experiment():
     # View optimal policy
     done = False
     s = env.reset()
+    steps = 0
     while not done:
         a = QIagent.select_action(s)
         s_next, r, done = env.step(a)
+        steps += 1
+        print('step: {} , reward: {}'.format(steps,r))
         env.render(Q_sa=QIagent.Q_sa,plot_optimal_policy=True,step_pause=2)
         s = s_next
 

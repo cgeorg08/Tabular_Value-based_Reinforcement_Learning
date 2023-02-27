@@ -39,7 +39,7 @@ class QLearningAgent:
                 raise KeyError("Provide a temperature")
                 
             # TO DO: Add own code
-            a = np.argmax(softmax(self.Q_sa_means[s],temp))
+            a = np.random.choice([0,1,2,3],p=softmax(self.Q_sa_means[s],temp))
             
         return a
         
@@ -61,17 +61,20 @@ def q_learning(n_timesteps, learning_rate, gamma, policy='egreedy', epsilon=None
     done = False
     steps = 0
     state = env._location_to_state(env.start_location)
-    while not done:
+    while steps<n_timesteps:
         steps+=1
         action = pi.select_action(state,policy,epsilon,temp)    # select action         
         s_next,r,done = env.step(action)    # simulate environment
         pi.Q_sa_means[state][action] = pi.update(state,action,r,s_next,done)    # Q update
 
         rewards.append(r)
-        state = s_next  # update state
-    
-    print('total steps to find the solution = ',steps)
-    
+
+        if done == True:
+            state = env._location_to_state(env.start_location)  # reset environment
+            done = False
+        else:
+            state = s_next  # update state
+        
     # if plot:
     #    env.render(Q_sa=pi.Q_sa,plot_optimal_policy=True,step_pause=0.1) # Plot the Q-value estimates during Q-learning execution
 
@@ -79,7 +82,7 @@ def q_learning(n_timesteps, learning_rate, gamma, policy='egreedy', epsilon=None
 
 def test():
     
-    n_timesteps = 1000
+    n_timesteps = 5000
     gamma = 1.0
     learning_rate = 0.1
 
@@ -93,6 +96,7 @@ def test():
 
     rewards = q_learning(n_timesteps, learning_rate, gamma, policy, epsilon, temp, plot)
     print("Obtained rewards: {}".format(rewards))
+    print('number of times found the goal state = ',rewards.count(40))
 
 if __name__ == '__main__':
     test()

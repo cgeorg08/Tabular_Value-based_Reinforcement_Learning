@@ -107,7 +107,7 @@ def experiment():
     Plot.add_hline(optimal_average_reward_per_timestep, label="DP optimum")
     Plot.save('on_off_policy.png')
     
-    # ##### Assignment 4: Back-up depth
+    ####### Assignment 4: Back-up depth
     policy = 'egreedy'
     epsilon = 0.1 # set epsilon back to original value
     learning_rate = 0.25
