@@ -8,6 +8,7 @@ By Thomas Moerland
 """
 
 import numpy as np
+import math
 import matplotlib.pyplot as plt
 from scipy.signal import savgol_filter
 
@@ -71,6 +72,14 @@ def linear_anneal(t,T,start,final,percentage):
         return final
     else:
         return final + (start - final) * (final_from_T - t)/final_from_T
+    
+def exponential_anneal(value,decay):
+    ''' Exponential annealing scheduler
+    value: current value
+    decay: percentage of annealing
+    ''' 
+    return value * math.exp(-decay)
+
 
 if __name__ == '__main__':
     # Test Learning curve plot
