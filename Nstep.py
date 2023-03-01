@@ -40,7 +40,7 @@ class NstepQLearningAgent:
                 raise KeyError("Provide a temperature")
                 
             # TO DO: Add own code
-            a = np.argmax(softmax(self.Q_sa_means[s],temp))
+            a = np.random.choice([0,1,2,3],p=softmax(self.Q_sa_means[s],temp))
             
         return a
         
