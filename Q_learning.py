@@ -60,7 +60,7 @@ def q_learning(n_timesteps, learning_rate, gamma, policy='egreedy', epsilon=None
     # TO DO: Write your Q-learning algorithm here!
     done = False
     steps = 0
-    state = env._location_to_state(env.start_location)
+    state = env.reset()
     while steps<n_timesteps:
         steps+=1
         action = pi.select_action(state,policy,epsilon,temp)    # select action         
@@ -70,7 +70,7 @@ def q_learning(n_timesteps, learning_rate, gamma, policy='egreedy', epsilon=None
         rewards.append(r)
 
         if done == True:
-            state = env._location_to_state(env.start_location)  # reset environment
+            state = env.reset()  # reset environment
             done = False
         else:
             state = s_next  # update state

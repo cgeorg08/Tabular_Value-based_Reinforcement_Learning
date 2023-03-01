@@ -60,7 +60,7 @@ def sarsa(n_timesteps, learning_rate, gamma, policy='egreedy', epsilon=None, tem
     # TO DO: Write your SARSA algorithm here!
     done = False
     steps = 0
-    state = env._location_to_state(env.start_location)
+    state = env.reset()
     action = pi.select_action(state,policy,epsilon,temp)    # select action 
     while steps<n_timesteps:
         steps+=1
@@ -71,7 +71,7 @@ def sarsa(n_timesteps, learning_rate, gamma, policy='egreedy', epsilon=None, tem
         rewards.append(r)
 
         if done == True:
-            state = env._location_to_state(env.start_location)      # reset environment
+            state = env.reset()      # reset environment
             action = pi.select_action(state,policy,epsilon,temp)
         else:
             state = s_next  # update state

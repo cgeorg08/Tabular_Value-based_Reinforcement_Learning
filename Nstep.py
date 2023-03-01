@@ -59,60 +59,80 @@ def n_step_Q(n_timesteps, max_episode_length, learning_rate, gamma,
     
     env = StochasticWindyGridworld(initialize_model=False)
     pi = NstepQLearningAgent(env.n_states, env.n_actions, learning_rate, gamma, n)
-    rewards = []
+    total_rewards = []
 
     # TO DO: Write your n-step Q-learning algorithm here!
-    states_list = list()
-    actions_list = list()
+    outersteps = 0
+    while outersteps<n_timesteps:
+        outersteps+=1
 
-    done = False
-    state = env._location_to_state(env.start_location)
-    states_list.append(state)
+        done = False
+        state = env.reset()
 
-    for steps in range(max_episode_length):
-        action = pi.select_action(state,policy,epsilon,temp)    # select action         
-        s_next,r,done = env.step(action)    # simulate environment
+        states_list = list()
+        states_list.append(state)
 
-        rewards.append(r)
-        state = s_next  # update state
+        isterminal_list = list()
+        isterminal_list.append(False)
 
-        # keep backups for update
-        states_list.append(s_next)
-        actions_list.append(action)
+        actions_list = list()
+        rewards = list()
 
-        if done:
-            break
-    
-    print('total steps to find the solution = ',steps)
-    print('len of states list = ',len(states_list))
-    print('len of actions list = ',len(actions_list))
+        for steps in range(max_episode_length):
+            action = pi.select_action(state,policy,epsilon,temp)    # select action         
+            s_next,r,done = env.step(action)    # simulate environment
 
-    T_ep = steps+1
+            rewards.append(r)
+            state = s_next  # update state
 
-    for t in range(T_ep):
-        backup_estimate = 0
-        m = min(n, T_ep-t)
-        if rewards[t+m] != -1:          # if state t+m is terminal
-            for i in range(m):          # n-step target without bootstrap
-                backup_estimate = backup_estimate + (gamma**i)*rewards[t+i]          
-        else:
-            for i in range(m):          # n-step target
-                backup_estimate = backup_estimate + (gamma**i)*rewards[t+i] + (gamma**m)*np.max(pi.Q_sa_means,axis=1)[t+m]
-        current_Q = pi.Q_sa_means[states_list[t]][actions_list[t]]
-        pi.Q_sa_means[states_list[t]][actions_list[t]] = current_Q + learning_rate*(backup_estimate-current_Q) # update Q-table
+            # keep backups for update
+            states_list.append(s_next)
+            isterminal_list.append(done)
+            actions_list.append(action)
+
+            if done:
+                if len(states_list) < 10:
+                    print('********************************')
+                    print(states_list)
+                    print(isterminal_list)
+                    print(actions_list)
+                    print('********************************')
+                break
+        
+        print('t step to find the solution = ',steps)
+        print('len of states list = ',len(states_list))
+        print('len of isterminal list = ',len(isterminal_list))
+        print('len of actions list = ',len(actions_list))
+        print('len of rewards list = ',len(rewards))
+
+        T_ep = steps+1
+
+        for t in range(T_ep):
+            backup_estimate = 0
+            m = min(n, T_ep-t)
+            if isterminal_list[t+m] != True:          # if state t+m is terminal
+                for i in range(m):          # n-step target without bootstrap
+                    backup_estimate = backup_estimate + (gamma**i)*rewards[t+i]          
+            else:
+                for i in range(m):          # n-step target
+                    backup_estimate = backup_estimate + (gamma**i)*rewards[t+i] + (gamma**m)*np.max(pi.Q_sa_means,axis=1)[states_list[t+m]]
+            current_Q = pi.Q_sa_means[states_list[t]][actions_list[t]]
+            pi.Q_sa_means[states_list[t]][actions_list[t]] = current_Q + learning_rate*(backup_estimate-current_Q) # update Q-table
+
+        total_rewards.append(rewards)
 
         
     # if plot:
     #    env.render(Q_sa=pi.Q_sa,plot_optimal_policy=True,step_pause=0.1) # Plot the Q-value estimates during n-step Q-learning execution
 
-    return rewards 
+    return total_rewards 
 
 def test():
-    n_timesteps = 10000
+    n_timesteps = 10     #10000
     max_episode_length = 10000
     gamma = 1.0
     learning_rate = 0.1
-    n = 5
+    n = 1
     
     # Exploration
     policy = 'egreedy' # 'egreedy' or 'softmax' 
@@ -124,7 +144,11 @@ def test():
 
     rewards = n_step_Q(n_timesteps, max_episode_length, learning_rate, gamma, 
                    policy, epsilon, temp, plot, n=n)
-    print("Obtained rewards: {}".format(rewards))    
+    # print("Obtained rewards: {}".format(rewards))  
+    sum=0
+    for r_list in rewards:
+        sum += r_list.count(40)
+    print('number of times found the goal state = ',sum)  
     
 if __name__ == '__main__':
     test()
