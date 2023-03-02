@@ -39,7 +39,7 @@ class MonteCarloAgent:
                 raise KeyError("Provide a temperature")
                 
             # TO DO: Add own code
-            a = np.argmax(softmax(self.Q_sa_means[s],temp))
+            a = np.random.choice([0,1,2,3],p=softmax(self.Q_sa_means[s],temp))
             
         return a
         
@@ -58,26 +58,65 @@ def monte_carlo(n_timesteps, max_episode_length, learning_rate, gamma,
     
     env = StochasticWindyGridworld(initialize_model=False)
     pi = MonteCarloAgent(env.n_states, env.n_actions, learning_rate, gamma)
-    rewards = []
+    total_rewards = []
 
     # TO DO: Write your Monte Carlo RL algorithm here!
-    # phase 1 is the same with n-step
-    # phase 2 : starting from line G_t+1 = 0
-    backup_estimate_next = 0
-    for i in range(steps,-1,-1):
-        backup_estimate = rewards[i] + gamma*backup_estimate_next
-        current_Q = pi.Q_sa_means[states_list[i]][actions_list[i]]
-        pi.Q_sa_means[states_list[i]][actions_list[i]] = current_Q + learning_rate*(backup_estimate-current_Q)
-        backup_estimate_next = backup_estimate
+    outersteps = 0
+    while outersteps<n_timesteps:
+        outersteps+=1
+
+        done = False
+        state = env.reset()
+
+        states_list = list()
+        states_list.append(state)
+
+        isterminal_list = list()
+        isterminal_list.append(False)
+
+        actions_list = list()
+        rewards = list()
+
+        # phase 1: collect episode
+        for steps in range(max_episode_length):
+            action = pi.select_action(state,policy,epsilon,temp)    # select action         
+            s_next,r,done = env.step(action)    # simulate environment
+
+            rewards.append(r)
+            state = s_next  # update state
+
+            # keep backups for update
+            states_list.append(s_next)
+            isterminal_list.append(done)
+            actions_list.append(action)
+
+            if done:
+                break
+        
+        print('t step to find the solution = ',steps)
+        print('len of states list = ',len(states_list))
+        print('len of isterminal list = ',len(isterminal_list))
+        print('len of actions list = ',len(actions_list))
+        print('len of rewards list = ',len(rewards))
+
+        # phase 2: update
+        backup_estimate_next = 0
+        for i in range(steps,-1,-1):
+            backup_estimate = rewards[i] + gamma*backup_estimate_next
+            current_Q = pi.Q_sa_means[states_list[i]][actions_list[i]]
+            pi.Q_sa_means[states_list[i]][actions_list[i]] = current_Q + learning_rate*(backup_estimate-current_Q)
+            backup_estimate_next = backup_estimate
+
+        total_rewards.append(rewards)
     
     # if plot:
     #    env.render(Q_sa=pi.Q_sa,plot_optimal_policy=True,step_pause=0.1) # Plot the Q-value estimates during Monte Carlo RL execution
 
-    return rewards 
+    return total_rewards 
     
 def test():
-    n_timesteps = 10000
-    max_episode_length = 100
+    n_timesteps = 10
+    max_episode_length = 10000
     gamma = 1.0
     learning_rate = 0.1
 
@@ -91,7 +130,11 @@ def test():
 
     rewards = monte_carlo(n_timesteps, max_episode_length, learning_rate, gamma, 
                    policy, epsilon, temp, plot)
-    print("Obtained rewards: {}".format(rewards))  
+    # print("Obtained rewards: {}".format(rewards))
+    sum=0
+    for r_list in rewards:
+        sum += r_list.count(40)
+    print('number of times found the goal state = ',sum)   
             
 if __name__ == '__main__':
     test()

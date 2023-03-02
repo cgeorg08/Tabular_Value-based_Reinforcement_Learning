@@ -78,6 +78,7 @@ def n_step_Q(n_timesteps, max_episode_length, learning_rate, gamma,
         actions_list = list()
         rewards = list()
 
+        # phase 1: collect episode
         for steps in range(max_episode_length):
             action = pi.select_action(state,policy,epsilon,temp)    # select action         
             s_next,r,done = env.step(action)    # simulate environment
@@ -91,12 +92,6 @@ def n_step_Q(n_timesteps, max_episode_length, learning_rate, gamma,
             actions_list.append(action)
 
             if done:
-                if len(states_list) < 10:
-                    print('********************************')
-                    print(states_list)
-                    print(isterminal_list)
-                    print(actions_list)
-                    print('********************************')
                 break
         
         print('t step to find the solution = ',steps)
@@ -107,6 +102,7 @@ def n_step_Q(n_timesteps, max_episode_length, learning_rate, gamma,
 
         T_ep = steps+1
 
+        # phase 2: update
         for t in range(T_ep):
             backup_estimate = 0
             m = min(n, T_ep-t)
