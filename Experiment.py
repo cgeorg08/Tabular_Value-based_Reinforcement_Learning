@@ -6,6 +6,7 @@ Leiden University, The Netherlands
 By Thomas Moerland
 """
 
+from tqdm import tqdm
 import numpy as np
 import time
 
@@ -21,7 +22,7 @@ def average_over_repetitions(backup, n_repetitions, n_timesteps, max_episode_len
     reward_results = np.empty([n_repetitions,n_timesteps]) # Result array
     now = time.time()
     
-    for rep in range(n_repetitions): # Loop over repetitions
+    for rep in tqdm(range(n_repetitions)): # Loop over repetitions
         if backup == 'q':
             rewards = q_learning(n_timesteps, learning_rate, gamma, policy, epsilon, temp, plot)
         elif backup == 'sarsa':
