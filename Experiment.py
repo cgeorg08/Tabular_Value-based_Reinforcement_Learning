@@ -9,6 +9,7 @@ By Thomas Moerland
 from tqdm import tqdm
 import numpy as np
 import time
+from itertools import zip_longest
 
 from Q_learning import q_learning
 from SARSA import sarsa
@@ -44,7 +45,7 @@ def average_over_repetitions(backup, n_repetitions, n_timesteps, max_episode_len
 def experiment(option):
     ####### Settings
     # Experiment    
-    n_repetitions = 10
+    n_repetitions = 50
     smoothing_window = 1001
     plot = False # Plotting is very slow, switch it off when we run repetitions
     
@@ -100,7 +101,7 @@ def experiment(option):
     if option == 3:
         print('Enabling option 3 - Q-learning versus SARSA . . .')
         policy = 'egreedy'
-        epsilon = 0.1 # set epsilon back to original value 
+        epsilon = 0.02 # set epsilon back to original value 
         learning_rates = [0.02,0.1,0.4]
         backups = ['q','sarsa']
         Plot = LearningCurvePlot(title = 'Back-up: on-policy versus off-policy')    
@@ -133,5 +134,5 @@ def experiment(option):
         Plot.save('depth.png')
 
 if __name__ == '__main__':
-    option = 2
+    option = 4
     experiment(option)

@@ -7,6 +7,7 @@ Leiden University, The Netherlands
 By Thomas Moerland
 """
 
+import itertools
 import numpy as np
 from Environment import StochasticWindyGridworld
 from Helper import softmax, argmax
@@ -63,8 +64,6 @@ def monte_carlo(n_timesteps, max_episode_length, learning_rate, gamma,
     # TO DO: Write your Monte Carlo RL algorithm here!
     outersteps = 0
     while outersteps<n_timesteps:
-        outersteps+=1
-
         done = False
         state = env.reset()
 
@@ -78,7 +77,7 @@ def monte_carlo(n_timesteps, max_episode_length, learning_rate, gamma,
         rewards = list()
 
         # phase 1: collect episode
-        for steps in range(max_episode_length):
+        for steps in range(min(max_episode_length,n_timesteps-outersteps)):
             action = pi.select_action(state,policy,epsilon,temp)    # select action         
             s_next,r,done = env.step(action)    # simulate environment
 
@@ -93,11 +92,13 @@ def monte_carlo(n_timesteps, max_episode_length, learning_rate, gamma,
             if done:
                 break
         
-        print('t step to find the solution = ',steps)
-        print('len of states list = ',len(states_list))
-        print('len of isterminal list = ',len(isterminal_list))
-        print('len of actions list = ',len(actions_list))
-        print('len of rewards list = ',len(rewards))
+        # print('t step to find the solution = ',steps)
+        # print('len of states list = ',len(states_list))
+        # print('len of isterminal list = ',len(isterminal_list))
+        # print('len of actions list = ',len(actions_list))
+        # print('len of rewards list = ',len(rewards))
+
+        outersteps = outersteps + steps+1
 
         # phase 2: update
         backup_estimate_next = 0
@@ -112,11 +113,11 @@ def monte_carlo(n_timesteps, max_episode_length, learning_rate, gamma,
     # if plot:
     #    env.render(Q_sa=pi.Q_sa,plot_optimal_policy=True,step_pause=0.1) # Plot the Q-value estimates during Monte Carlo RL execution
 
-    return total_rewards 
+    return list(itertools.chain(*total_rewards)) 
     
 def test():
-    n_timesteps = 10
-    max_episode_length = 10000
+    n_timesteps = 10000
+    max_episode_length = 1000
     gamma = 1.0
     learning_rate = 0.1
 
@@ -131,10 +132,7 @@ def test():
     rewards = monte_carlo(n_timesteps, max_episode_length, learning_rate, gamma, 
                    policy, epsilon, temp, plot)
     # print("Obtained rewards: {}".format(rewards))
-    sum=0
-    for r_list in rewards:
-        sum += r_list.count(40)
-    print('number of times found the goal state = ',sum)   
+    print('number of times found the goal state = ',rewards.count(40))   
             
 if __name__ == '__main__':
     test()
