@@ -149,7 +149,7 @@ def experiment(option):
                                             gamma, policy, epsilon, temp, smoothing_window, plot, n)
         Plot.add_curve(learning_curve,label='Monte Carlo')        
         Plot.add_hline(optimal_average_reward_per_timestep, label="DP optimum")
-        Plot.save('depth_tokalo.png')
+        Plot.save('depth.png')
         
         # policy = 'egreedy'
         # epsilon = 0.2 #0.01,0.5 -- # set epsilon back to original value
