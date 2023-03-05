@@ -106,12 +106,13 @@ def n_step_Q(n_timesteps, max_episode_length, learning_rate, gamma,
         for t in range(T_ep):
             backup_estimate = 0
             m = min(n, T_ep-t)
-            if isterminal_list[t+m] != True:          # if state t+m is terminal
+            if isterminal_list[t+m] == True:          # if state t+m is terminal
                 for i in range(m):          # n-step target without bootstrap
                     backup_estimate = backup_estimate + (gamma**i)*rewards[t+i]          
             else:
                 for i in range(m):          # n-step target
-                    backup_estimate = backup_estimate + (gamma**i)*rewards[t+i] + (gamma**m)*np.max(pi.Q_sa_means,axis=1)[states_list[t+m]]
+                    backup_estimate = backup_estimate + (gamma**i)*rewards[t+i] 
+                backup_estimate = backup_estimate + (gamma**m)*np.max(pi.Q_sa_means,axis=1)[states_list[t+m]]
             current_Q = pi.Q_sa_means[states_list[t]][actions_list[t]]
             pi.Q_sa_means[states_list[t]][actions_list[t]] = current_Q + learning_rate*(backup_estimate-current_Q) # update Q-table
 

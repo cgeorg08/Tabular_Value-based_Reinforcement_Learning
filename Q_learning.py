@@ -80,6 +80,37 @@ def q_learning(n_timesteps, learning_rate, gamma, policy='egreedy', epsilon=None
 
     return rewards 
 
+def q_learning_annealing(n_timesteps, learning_rate, gamma, policy='egreedy', epsilon_list=None, temp=None, plot=True):
+    ''' runs a single repetition of q_learning
+    Return: rewards, a vector with the observed rewards at each timestep ''' 
+    
+    env = StochasticWindyGridworld(initialize_model=False)
+    pi = QLearningAgent(env.n_states, env.n_actions, learning_rate, gamma)
+    rewards = []
+
+    # TO DO: Write your Q-learning algorithm here!
+    done = False
+    steps = 0
+    state = env.reset()
+    while steps<n_timesteps:
+        steps+=1
+        action = pi.select_action(state,policy,epsilon_list[steps-1],temp)    # select action         
+        s_next,r,done = env.step(action)    # simulate environment
+        pi.Q_sa_means[state][action] = pi.update(state,action,r,s_next,done)    # Q update
+
+        rewards.append(r)
+
+        if done == True:
+            state = env.reset()  # reset environment
+            done = False
+        else:
+            state = s_next  # update state
+        
+    # if plot:
+    #    env.render(Q_sa=pi.Q_sa,plot_optimal_policy=True,step_pause=0.1) # Plot the Q-value estimates during Q-learning execution
+
+    return rewards 
+
 def test():
     
     n_timesteps = 5000
